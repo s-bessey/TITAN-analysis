@@ -67,3 +67,17 @@ accumulate <-function(rawData) {
   #write.table(cumReport, file = fileName)
   meanAndStd(dataOut)
 }
+
+
+temp=list.files(pattern = "Inc*")
+for (i in 1:length(temp)){
+  assign('temp2', read.table(temp[i],header = TRUE))
+  temp2 <- temp2[order(temp2[,1]),]
+  assign(temp[i],temp2)
+}
+inputList<- list(get(temp)) #this should give a list of all dataframes that can then be managed with lapply for mean function
+
+
+
+accumulate(deparse(temp[1]))
+           
