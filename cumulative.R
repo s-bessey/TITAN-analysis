@@ -7,7 +7,8 @@ accumulate <-function(rawData) {
   dataOut <- paste((deparse(substitute(rawData))),"_Cum",sep="")
   
   #create a dataframe of cumulative sum of incidence at each timestep by seed
-  forCum <- aggregate(.~seed, rawData,function(x) cumsum = cumsum(x))
+  forCum <- aggregate(.~seed, rawData,function(x) cumsum = cumsum(x)) %>%
+               separate_rows()
   
   colnames(forCum)[3:ncol(forCum)] <- paste(colnames(forCum)[3:ncol(forCum)],
                                             "_Cum",sep="")
