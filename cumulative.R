@@ -14,7 +14,6 @@ accumulate <-function(rawData) {
   #colnames(forCum)[1:2] <- c("seed", "t")   #above line adds mean to end of 
   #column. This corrects seed and time back to t
   
-
   
   #meanReport <- merge(forCum,forSd)  #this puts the mean and std in one file 
   #and merges the t columns
