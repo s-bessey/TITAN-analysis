@@ -7,13 +7,23 @@ library(tidyr)
 library(ggplot2)
 
 ## Read base cases results into the global environment
-setwd("~/results") 
+#setwd("~/results") 
 #import files to use
 incidenceReport=read.table("incidenceReport.txt", sep="\t", header=TRUE)
                           # Incidence Report (Overall)
 iduReport=read.table("iduReport.txt",sep="\t", 
                      header=TRUE) # Injection Drug User Report (Overall)
 
+
+#testing -- need to find a standard word for all reports to be imported
+temp=list.files(pattern = "Inc*")
+for (i in 1:length(temp)){
+  assign('temp2', read.table(temp[i],header = TRUE))
+  temp2 <- temp2[order(temp2[,1]),]
+  assign(temp[i],temp2)
+}
+  
+  
 #function for cumulative incidence
 accumulate <- function(nonCumFile){
   #define cumulative incidence grouped by seed
