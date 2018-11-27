@@ -10,51 +10,77 @@ library(prettyGraphs)
 
 #import files to use
 
-## make this into more general import
-
-
-incidenceReport=read.table("incidenceReport.txt", sep="\t", header=TRUE)
-                          # Incidence Report (Overall)
-iduReport=read.table("iduReport.txt",sep="\t", 
-                     header=TRUE) # Injection Drug User Report (Overall)
+#testing -- need to find a standard word for all reports to be imported
+temp=list.files(pattern = "Inc*")
+for (i in 1:length(temp)){
+  assign('temp2', read.table(temp[i],header = TRUE))
+  temp2 <- temp2[order(temp2[,1]),]
+  assign(temp[i],temp2)
+}
 
 #function for cumulative incidence
-accumulate <- function(nonCumFile){
-  #define cumulative incidence grouped by seed
-  #creates a data frame of the cumulative incidence on each individual iteration
-  #this data frame excludes the first two columns, because time and seed should
-  #not be cumulative
+accumulate <-function(rawData) {
+  #set up empty data frame for the mean output
+  #forCum <- as.data.frame(seq(0,max(rawData$t),1))
+  #colnames(forCum) <- "t"
+  
+  #set file/object name for output
+  dataOut <- paste((deparse(substitute(rawData))),"_Cum",sep="")
+  
+  #create a dataframe of cumulative sum of incidence at each timestep by seed
+  forCum <- aggregate(.~seed, rawData,function(x) cumsum = cumsum(x)) %>%
+    separate_rows()
+  
+  colnames(forCum)[3:ncol(forCum)] <- paste(colnames(forCum)[3:ncol(forCum)],
+                                            "_Cum",sep="")
+  #colnames(forCum)[1:2] <- c("seed", "t")   #above line adds mean to end of 
+  #column. This corrects seed and time back to t
   
   
-  #I think this needs to change to an aggregate like meanAndStd
-  cumIncidence <- as.data.frame(do.call("rbind",
-                 by(nonCumFile[3:ncol(nonCumFile)],nonCumFile$seed,cumsum)))
+  #meanReport <- merge(forCum,forSd)  #this puts the mean and std in one file 
+  #and merges the t columns
   
-  #create names for each column based on original column name with _Cum appended
-  for (ii in 1:ncol(cumIncidence)){
-    names(cumIncidence)[ii]<-(paste(colnames(cumIncidence[ii]),"_Cum",sep=""))
-  }
+  assign(x=dataOut, value = forCum, env = parent.frame()) #create variable
+  fileName <- paste((deparse(substitute(rawData))),"_Cum",".txt",sep="")
+  #write.table(cumReport, file = fileName)
+}
+
+meanAndStd <-function(rawData) {
+  #set up empty data frame for the mean output
+  forMean <- as.data.frame(seq(0,max(rawData$t),1))
+  colnames(forMean) <- "t"
   
-  #create a filename for output file based on name of input file
-  file.name <- paste((deparse(substitute(nonCumFile))),"_Cum",".txt",sep="")
+  #set file/object name for output
+  dataOut <- paste((deparse(substitute(rawData))),"_Mean",sep="")
   
-  #bind the first two rows (timestep and seed) to the cumulative values
-  cumulativeReport <- cbind(nonCumFile[,1:2],cumIncidence)
+  #create a dataframe of means at each timestep
+  forMean <- aggregate(.~t, rawData,function(x) mean = mean(x))
+  forMean$seed <- NULL #this is mean across seeds; don't need seed
+  colnames(forMean) <- paste(colnames(forMean),"_Mean",sep="")
+  colnames(forMean)[1] <- "t"   #above line adds mean to end of column. This
+  #corrects time back to t
   
-  #create output
-  write.table(cumulativeReport,file=file.name)
-  listName <- paste(deparse(substitute(nonCumFile)),"_Cum",sep="")
-  output <- as.data.frame(cumulativeReport)
-  assign(x = listName, value = output, env=parent.frame())
+  #create a dataframe of standard deviations at each timestep
+  forSd <- aggregate(.~t, rawData,function(x) sd = sd(x))
+  forSd$seed <- NULL #sd across seeds; don't need seed
+  colnames(forSd) <- paste(colnames(forSd),"_sd",sep="")
+  colnames(forSd)[1] <- "t"   #above line adds mean to end of column. This
+  #corrects time back to t
   
+  meanReport <- merge(forMean,forSd)  #this puts the mean and std in one file 
+  #and merges the t columns
+  
+  #because the mean and std are appended together, they're in order of all mean
+  #columns then all std columns. This is easily fixed by sorting alphabetically
+  meanReport <-meanReport[,order(names(meanReport))]
+  meanReport <- select(meanReport,t,everything()) #put time back in front
+  
+  assign(x=dataOut, value = meanReport, env = parent.frame()) #create variable
+  fileName <- paste((deparse(substitute(rawData))),"_Mean",".txt",sep="")
+  write.table(meanReport, file = fileName)
 }
 
 
 
 
-accumulate(incidenceReport)
-
-#plot cumulative Total
-p <- ggplot() + geom_line(data = incidenceReport_Cum, aes(x = t, y = Total_Cum, group = seed, color=factor(seed)))
-p+geom_line(data = incidenceReport_Cum,aes(x = t, y = Total_Cum, linetype=factor(seed), color=factor(seed)))
 
