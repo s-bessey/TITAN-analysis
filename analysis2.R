@@ -65,17 +65,19 @@ accumulate <-function(rawData) {
   assign(x=dataOut, value = forCum, env = parent.frame()) #create variable
   fileName <- paste((deparse(substitute(rawData))),"_Cum",".txt",sep="")
   #write.table(cumReport, file = fileName)
-  meanAndStd(dataOut)
+  #meanAndStd(forCum)
 }
 
 
-temp=list.files(pattern = "Inc*")
+temp=list.files(pattern = "Inc*")  #get the names of all files to analyze
 for (i in 1:length(temp)){
-  assign('temp2', read.table(temp[i],header = TRUE))
-  temp2 <- temp2[order(temp2[,1]),]
-  assign(temp[i],temp2)
+  assign('temp2', read.table(temp[i],header = TRUE))  # create temp file of df
+                                                      # from names in list above
+  temp2 <- temp2[order(temp2[,1]),] # order rows by seed
+  assign(temp[i],temp2)   # naming the data.frame imported above
+  accumulate((temp2)) # accumulation function for 
 }
-inputList<- list(get(temp)) #this should give a list of all dataframes that can then be managed with lapply for mean function
+inputList<- list(get(temp),all.names=TRUE) #this should give a list of all dataframes that can then be managed with lapply for mean function
 
 
 
