@@ -41,13 +41,13 @@ meanAndStd <-function(rawData) {
 
 
 #function for cumulative incidence
-accumulate <-function(rawData) {
+accumulate <-function(rawData, name) {
   #set up empty data frame for the mean output
   #forCum <- as.data.frame(seq(0,max(rawData$t),1))
   #colnames(forCum) <- "t"
   
   #set file/object name for output
-  dataOut <- paste((deparse(substitute(rawData))),"_Cum",sep="")
+  dataOut <- paste((deparse(substitute(name))),"_Cum",sep="")
   
   #create a dataframe of cumulative sum of incidence at each timestep by seed
   forCum <- aggregate(.~seed, rawData,function(x) cumsum = cumsum(x)) %>%
@@ -63,7 +63,7 @@ accumulate <-function(rawData) {
   #and merges the t columns
   
   assign(x=dataOut, value = forCum, env = parent.frame()) #create variable
-  fileName <- paste((deparse(substitute(rawData))),"_Cum",".txt",sep="")
+  fileName <- paste(name,"_Cum",".txt",sep="")
   #write.table(cumReport, file = fileName)
   #meanAndStd(forCum)
 }
@@ -71,12 +71,14 @@ accumulate <-function(rawData) {
 
 temp=list.files(pattern = "Inc*")  #get the names of all files to analyze
 for (i in 1:length(temp)){
-  assign('temp2', read.table(temp[i],header = TRUE))  # create temp file of df
+  assign(temp[i], read.table(temp[i],header = TRUE))  # create temp file of df
                                                       # from names in list above
   temp2 <- temp2[order(temp2[,1]),] # order rows by seed
   assign(temp[i],temp2)   # naming the data.frame imported above
-  accumulate((temp2)) # accumulation function for 
+  accumulate(temp2,x) # accumulation function for 
 }
+
+##in above, add gsub(".txt","",[name])
 inputList<- list(get(temp),all.names=TRUE) #this should give a list of all dataframes that can then be managed with lapply for mean function
 
 
