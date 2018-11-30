@@ -47,7 +47,8 @@ accumulate <-function(rawData, name) {
   #colnames(forCum) <- "t"
   
   #set file/object name for output
-  dataOut <- paste((deparse(substitute(name))),"_Cum",sep="")
+  #dataOut <- paste((deparse(substitute(name))),"_Cum",sep="")
+  dataOut <- paste(name, "_Cum", sep="")
   
   #create a dataframe of cumulative sum of incidence at each timestep by seed
   forCum <- aggregate(.~seed, rawData,function(x) cumsum = cumsum(x)) %>%
@@ -71,11 +72,11 @@ accumulate <-function(rawData, name) {
 
 temp=list.files(pattern = "Inc*")  #get the names of all files to analyze
 for (i in 1:length(temp)){
-  assign(temp[i], read.table(temp[i],header = TRUE))  # create temp file of df
+  assign("temp2", read.table(temp[i],header = TRUE))  # create temp file of df
                                                       # from names in list above
   temp2 <- temp2[order(temp2[,1]),] # order rows by seed
-  assign(temp[i],temp2)   # naming the data.frame imported above
-  accumulate(temp2,x) # accumulation function for 
+  #assign(temp[i],temp2)   # naming the data.frame imported above
+  accumulate(temp2,gsub(".txt","",temp[i])) # accumulation function for 
 }
 
 ##in above, add gsub(".txt","",[name])
