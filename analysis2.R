@@ -53,7 +53,7 @@ accumulate <-function(rawData, name) {
   #create a dataframe of cumulative sum of incidence at each timestep by seed
   forCum <- aggregate(.~seed, rawData,function(x) cumsum = cumsum(x)) %>%
     separate_rows()
-  
+  forCum$t <- rawData$t
   colnames(forCum)[3:ncol(forCum)] <- paste(colnames(forCum)[3:ncol(forCum)],
                                             "_Cum",sep="")
   #colnames(forCum)[1:2] <- c("seed", "t")   #above line adds mean to end of 
