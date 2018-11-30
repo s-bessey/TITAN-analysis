@@ -4,13 +4,13 @@ library(tidyr)
 library(prettyGraphs)
 
 
-meanAndStd <-function(rawData) {
+meanAndStd <-function(rawData, name) {
   #set up empty data frame for the mean output
   forMean <- as.data.frame(seq(0,max(rawData$t),1))
   colnames(forMean) <- "t"
   
   #set file/object name for output
-  dataOut <- paste((deparse(substitute(rawData))),"_Mean",sep="")
+  dataOut <- paste(name,"_Mean",sep="")
   
   #create a dataframe of means at each timestep
   forMean <- aggregate(.~t, rawData,function(x) mean = mean(x))
@@ -70,13 +70,16 @@ accumulate <-function(rawData, name) {
 }
 
 
-temp=list.files(pattern = "Inc*")  #get the names of all files to analyze
+fileNames<-list.files(pattern = "Inc*")  #get the names of all files to analyze
+objectNames<-gsub(".txt","",temp)
 for (i in 1:length(temp)){
-  assign("temp2", read.table(temp[i],header = TRUE))  # create temp file of df
+  assign("temp2", read.table(fileNames[i],header = TRUE))  # create temp file of df
                                                       # from names in list above
   temp2 <- temp2[order(temp2[,1]),] # order rows by seed
   #assign(temp[i],temp2)   # naming the data.frame imported above
-  accumulate(temp2,gsub(".txt","",temp[i])) # accumulation function for 
+  accumulate(temp2,objectNames[i]) 
+  forMeanName <- paste(objectNames[i],"_Cum",sep="")
+  meanAndStd(get(forMeanName[1]),forMeanName[1])
 }
 
 ##in above, add gsub(".txt","",[name])
