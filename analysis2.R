@@ -71,8 +71,8 @@ accumulate <-function(rawData, name) {
 
 
 fileNames<-list.files(pattern = "Inc*")  #get the names of all files to analyze
-objectNames<-gsub(".txt","",temp)
-for (i in 1:length(temp)){
+objectNames<-gsub(".txt","",fileNames)
+for (i in 1:length(fileNames)){
   assign("temp2", read.table(fileNames[i],header = TRUE))  # create temp file of df
                                                       # from names in list above
   temp2 <- temp2[order(temp2[,1]),] # order rows by seed
@@ -83,7 +83,7 @@ for (i in 1:length(temp)){
 }
 
 ##in above, add gsub(".txt","",[name])
-inputList<- list(get(temp),all.names=TRUE) #this should give a list of all dataframes that can then be managed with lapply for mean function
+#inputList<- list(get(temp),all.names=TRUE) #this should give a list of all dataframes that can then be managed with lapply for mean function
 
 
 
