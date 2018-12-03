@@ -2,6 +2,7 @@ library(plyr)
 library(dplyr)
 library(tidyr)
 library(prettyGraphs)
+library(ggplot2)
 
 
 meanAndStd <-function(rawData, name) {
@@ -76,16 +77,20 @@ for (i in 1:length(fileNames)){
   assign("temp2", read.table(fileNames[i],header = TRUE))  # create temp file of df
                                                       # from names in list above
   temp2 <- temp2[order(temp2[,1]),] # order rows by seed
+  write.table(temp2,file = "IncidenceReport.txt",row.names = F) #ordered file
   #assign(temp[i],temp2)   # naming the data.frame imported above
   accumulate(temp2,objectNames[i]) 
   forMeanName <- paste(objectNames[i],"_Cum",sep="")
   meanAndStd(get(forMeanName[1]),forMeanName[1])
 }
 
-##in above, add gsub(".txt","",[name])
-#inputList<- list(get(temp),all.names=TRUE) #this should give a list of all dataframes that can then be managed with lapply for mean function
+
+#basic output functions
+
+p <- ggplot() + 
+  geom_line(data = IncidenceReport_Cum, aes(x = t, y = Total_Cum, group = seed, 
+                                            color=factor(seed))) + 
+  labs(x="Timestep", y = "Cumulative Total Infections") +
+  ggtitle("Cumulative Total Infections with Time")
 
 
-
-accumulate(deparse(temp[1]))
-           
