@@ -27,6 +27,10 @@ meanAndStd <-function(rawData, name) {
   colnames(forSd)[1] <- "t"   #above line adds mean to end of column. This
   #corrects time back to t
   
+  
+  #quantiles
+  Quan <- aggregate(.~t,IncidenceReport_Cum[,2:ncol(IncidenceReport_Cum)], function(x) quantile = quantile(x))
+  
   meanReport <- merge(forMean,forSd)  #this puts the mean and std in one file 
   #and merges the t columns
   
@@ -74,7 +78,7 @@ accumulate <-function(rawData, name) {
 fileNames<-list.files(pattern = "Inc*")  #get the names of all files to analyze
 objectNames<-gsub(".txt","",fileNames)
 for (i in 1:length(fileNames)){
-  assign("temp2", read.table(fileNames[i],header = TRUE))  # create temp file of df
+  assign("temp2", read.table(fileNames[i],header = TRUE)) # create temp file of df
                                                       # from names in list above
   temp2 <- temp2[order(temp2[,1]),] # order rows by seed
   write.table(temp2,file = "IncidenceReport.txt",row.names = F) #ordered file
@@ -93,4 +97,12 @@ p <- ggplot() +
   labs(x="Timestep", y = "Cumulative Total Infections") +
   ggtitle("Cumulative Total Infections with Time")
 
+ggsave("plot_CumIncidence.pdf")
 
+
+p <- ggplot() + 
+  geom_line(data = IncidenceReport_Cum_Mean, aes(x = t, y = Total_Cum_Mean)) + 
+  labs(x="Timestep", y = "Cumulative Total Infections") +
+  ggtitle("Cumulative Total Infections with Time")
+
+ggsave("plot_CumIncidence.pdf")
