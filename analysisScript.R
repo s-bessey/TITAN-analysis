@@ -11,7 +11,7 @@ library(prettyGraphs)
 #import files to use
 
 #testing -- need to find a standard word for all reports to be imported
-temp=list.files(pattern = "Inc*")
+temp=list.files(pattern = "basicReport*")
 for (i in 1:length(temp)){
   assign('temp2', read.table(temp[i],header = TRUE))
   temp2 <- temp2[order(temp2[,1]),]
