@@ -9,7 +9,7 @@ accumulate <-function(rawData) {
   #create a dataframe of cumulative sum of incidence at each timestep by seed
   forCum <- aggregate(.~seed, rawData,function(x) cumsum = cumsum(x)) %>%
                separate_rows()
-  
+  forCum$t <- rawData$t
   colnames(forCum)[3:ncol(forCum)] <- paste(colnames(forCum)[3:ncol(forCum)],
                                             "_Cum",sep="")
   #colnames(forCum)[1:2] <- c("seed", "t")   #above line adds mean to end of 
@@ -22,4 +22,21 @@ accumulate <-function(rawData) {
   assign(x=dataOut, value = forCum, env = parent.frame()) #create variable
   fileName <- paste((deparse(substitute(rawData))),"_Cum",".txt",sep="")
   #write.table(cumReport, file = fileName)
+  CIs <- tapply(forCum$Total_Cum, forCum$t, quantile, probs = c(.025, .5, .975)) %>%
+    do.call("rbind",.) %>% as.data.frame()
+  assign("Confidence", CIs, envir = .GlobalEnv)
 }
+meanAndStd()
+
+
+xvalue <- as.numeric(unlist($t))
+yvalue <- as.numeric(unlist(Confidence[2]))
+upperCI <- as.numeric(unlist(Confidence[3]))
+lowerCI <- as.numeric(unlist(Confidence[1]))
+
+plot(xvalue,yvalue, type = 'l')
+polygon(c(rev(xvalue),xvalue), c(rev(lowerCI), upperCI), col = 'grey80', border = NA)
+lines(lowerCI~xvalue)
+lines(upperCI~xvalue)
+
+lines(yvalue~xvalue)
