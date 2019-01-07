@@ -10,13 +10,6 @@ library(prettyGraphs)
 
 #import files to use
 
-#testing -- need to find a standard word for all reports to be imported
-temp=list.files(pattern = "basicReport*")
-for (i in 1:length(temp)){
-  assign('temp2', read.table(temp[i],header = TRUE))
-  temp2 <- temp2[order(temp2[,1]),]
-  assign(temp[i],temp2)
-}
 
 #function for cumulative incidence
 accumulate <-function(rawData) {
@@ -28,14 +21,15 @@ accumulate <-function(rawData) {
   dataOut <- paste((deparse(substitute(rawData))),"_Cum",sep="")
   
   #create a dataframe of cumulative sum of incidence at each timestep by seed
-  forCum <- aggregate(.~seed, rawData,function(x) cumsum = cumsum(x)) %>%
+  forCum <- aggregate(.~rseed, rawData,function(x) cumsum = cumsum(x)) %>%
     separate_rows()
   
   colnames(forCum)[3:ncol(forCum)] <- paste(colnames(forCum)[3:ncol(forCum)],
                                             "_Cum",sep="")
+  colnames(forCum)[which(names(forCum) == "t_Cum")] <- "t"
   #colnames(forCum)[1:2] <- c("seed", "t")   #above line adds mean to end of 
   #column. This corrects seed and time back to t
-  
+  forCum$t <- rawData$t
   
   #meanReport <- merge(forCum,forSd)  #this puts the mean and std in one file 
   #and merges the t columns
