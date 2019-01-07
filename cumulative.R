@@ -7,10 +7,13 @@ accumulate <-function(rawData) {
   dataOut <- paste((deparse(substitute(rawData))),"_Cum",sep="")
   
   #create a dataframe of cumulative sum of incidence at each timestep by seed
-  forCum <- aggregate(.~seed, rawData,function(x) cumsum = cumsum(x)) %>%
+  forCum <- aggregate(.~rseed, rawData,function(x) cumsum = cumsum(x)) %>%
                separate_rows()
   forCum$t <- rawData$t
-  colnames(forCum)[3:ncol(forCum)] <- paste(colnames(forCum)[3:ncol(forCum)],
+  forCum$pseed <- rawData$pseed
+  forCum$nseed <- rawData$nseed
+  
+  colnames(forCum)[5:ncol(forCum)] <- paste(colnames(forCum)[5:ncol(forCum)],
                                             "_Cum",sep="")
   #colnames(forCum)[1:2] <- c("seed", "t")   #above line adds mean to end of 
   #column. This corrects seed and time back to t
@@ -29,7 +32,7 @@ accumulate <-function(rawData) {
 meanAndStd()
 
 
-xvalue <- as.numeric(unlist($t))
+xvalue <- as.numeric(unlist(basicReport_HF_Cum$t)[1:nrow(Confidence)])
 yvalue <- as.numeric(unlist(Confidence[2]))
 upperCI <- as.numeric(unlist(Confidence[3]))
 lowerCI <- as.numeric(unlist(Confidence[1]))
@@ -40,3 +43,4 @@ lines(lowerCI~xvalue)
 lines(upperCI~xvalue)
 
 lines(yvalue~xvalue)
+
