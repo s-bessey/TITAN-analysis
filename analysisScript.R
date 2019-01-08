@@ -24,12 +24,15 @@ accumulate <-function(rawData) {
   forCum <- aggregate(.~rseed, rawData,function(x) cumsum = cumsum(x)) %>%
     separate_rows()
   
-  colnames(forCum)[3:ncol(forCum)] <- paste(colnames(forCum)[3:ncol(forCum)],
+  colnames(forCum)[5:ncol(forCum)] <- paste(colnames(forCum)[5:ncol(forCum)],
                                             "_Cum",sep="")
-  colnames(forCum)[which(names(forCum) == "t_Cum")] <- "t"
+  #colnames(forCum)[which(names(forCum) == "t_Cum")] <- "t"
+  #colnames(forCum)[which(names(forCum) == "pseed")] <- "t"
   #colnames(forCum)[1:2] <- c("seed", "t")   #above line adds mean to end of 
   #column. This corrects seed and time back to t
   forCum$t <- rawData$t
+  forCum$pseed <- rawData$pseed
+  forCum$nseed <- rawData$nseed
   
   #meanReport <- merge(forCum,forSd)  #this puts the mean and std in one file 
   #and merges the t columns
