@@ -7,12 +7,14 @@ accumulate <-function(rawData, outputname) {
   dataOut <- paste(outputname,"_Cum",sep="")
   
   #create a dataframe of cumulative sum of incidence at each timestep by seed
-  forCum <- aggregate(.~rseed + t, rawData,function(x) cumsum = cumsum(x)) %>%
-               separate_rows()
+  forCum <- aggregate(.~nseed + t, rawData,function(x) cumsum = cumsum(x))# %>%
+   #            separate_rows()
+  meanCum <- aggregate(.~t, rawData,function(x) mean = mean(x))
+  # assign("test", meanCum, envir = .GlobalEnv)
   #shouldn't need this when changing to aggregate by both seed and t
   #forCum$t <- rawData$t
-  forCum$pseed <- rawData$pseed
-  forCum$nseed <- rawData$nseed
+  #forCum$pseed <- rawData$pseed
+  #forCum$nseed <- rawData$nseed
 
   
   assign(x=dataOut, value = forCum, env = parent.frame()) #create variable
@@ -20,8 +22,10 @@ accumulate <-function(rawData, outputname) {
   #write.table(cumReport, file = fileName)
   CIs <- tapply(forCum$Total, forCum$t, quantile, probs = c(.025, .975)) %>%
     do.call("rbind",.) %>% as.data.frame()
-  meanCum <- aggregate(~.t, forCum, FUN = mean)
-  assign("output", cbind(CIs, meanCum$Total), envir = .GlobalEnv)
+  assign("test", CIs, envir = .GlobalEnv)
+  output <- cbind(meanCum$t, CIs, meanCum$Total)
+  colnames(output) <- c("t", "lowerCI", "upperCI", "meanTotal")
+  assign("output", output, envir = .GlobalEnv)
 }
 
 accumulate(basicReport_BLACK)
