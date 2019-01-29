@@ -24,7 +24,7 @@ accumulate <-function(rawData, filetype, col, transp) {
   forCum <- rawData
   x <-forCum %>% group_by(nseed) %>% mutate(cumInc = cumsum(Incid))
   forCum <- data.frame(x)
-  forCum$IncPerc <- (forCum$cumInc/forCum$Total)*100
+  forCum$IncPerc <- (forCum$cumInc/forCum$Total)
   #cbind(forCum, cum_Inc)
   # take the mean of each timestep
   meanCum <<- aggregate(.~t, forCum, function(x) mean = mean(x))
@@ -42,7 +42,7 @@ accumulate <-function(rawData, filetype, col, transp) {
   # back to a dataframe with rbind and as.data.frame
   SIs <<- tapply(forCum$IncPerc, forCum$t, quantile, probs = c(.025, .975)) %>%
     do.call("rbind",.) %>% as.data.frame()
-  SIprev <- SIs <- tapply(forCum$HIV, forCum$t, quantile, probs = c(.025, .975)) %>%
+  SIprev <- tapply(forCum$HIV, forCum$t, quantile, probs = c(.025, .975)) %>%
     do.call("rbind",.) %>% as.data.frame()
   # put the SIs and mean of the total cumulative incidence into a df, name
   # columns, and assign it to an output variable for analysis
@@ -55,7 +55,7 @@ accumulate <-function(rawData, filetype, col, transp) {
   #create line plot with ribbon
   outputplot <- ggplot(output) + geom_line(aes(x = t, y = CumulativeIncidencePercent)) +
     geom_ribbon(aes(x = t, ymin = lowerCI, ymax = upperCI), alpha = transp) +
-    #scale_y_continuous(labels = function(x) paste0(x*100, "%"))+
+    scale_y_continuous(labels = function(x) paste0(x*100, "%"))+
     theme_classic()
   prevPlot <- ggplot(outputPrev) + geom_line(aes(x = t, y = CumulativeIncidencePrev)) +
     geom_ribbon(aes(x = t, ymin = lowerCI, ymax = upperCI), alpha = transp) +
