@@ -9,7 +9,7 @@
 # set some parameters
 plotType = ".pdf" # eps won't work for this, but choose a filetype for the saved plot
 transparency = .3 # how transparent the ribbon on the plot is
-plotColor = # color for the ribbon
+plotColor = 'blue' # color for the ribbon
 
 accumulate <-function(rawData, filetype, col, transp) {
 
@@ -19,9 +19,15 @@ accumulate <-function(rawData, filetype, col, transp) {
   # create a dataframe of cumulative sum of incidence at each timestep for each seed
   # the aggregate function allows you to perform any function on an entire data
   # frame grouped by one or more variables
-  forCum <- aggregate(.~nseed + t, rawData,function(x) cumsum = cumsum(x))
+  #forCum <- aggregate(.~t+nseed, rawData,function(x) cumsum = cumsum(x))
+  #forCum <- rawData %>% group_by(nseed,t) %>% mutate(sum=cumsum(Incid))
+  forCum <- rawData
+  x <-forCum %>% group_by(nseed) %>% mutate(cumInc = cumsum(Incid))
+  forCum <- data.frame(x)
+  forCum$IncPerc <- forCum$cumInc/forCum$Total
+  #cbind(forCum, cum_Inc)
   # take the mean of each timestep
-  meanCum <- aggregate(.~t, rawData,function(x) mean = mean(x))
+  meanCum <- aggregate(.~t, forCum, function(x) mean = mean(x))
 
 
   # gives the cumulative sum BEFORE taking the mean, allowing further
@@ -34,22 +40,23 @@ accumulate <-function(rawData, filetype, col, transp) {
   # because of the way the quantile funciton works, we can't use it over 
   # the entire df. Because of that, we can use tapply, but need to coerce it
   # back to a dataframe with rbind and as.data.frame
-  SIs <- tapply(forCum$Total, forCum$t, quantile, probs = c(.025, .975)) %>%
+  SIs <- tapply(forCum$IncPerc, forCum$t, quantile, probs = c(.025, .975)) %>%
     do.call("rbind",.) %>% as.data.frame()
   # put the SIs and mean of the total cumulative incidence into a df, name
   # columns, and assign it to an output variable for analysis
-  output <- cbind(meanCum$t, SIs, meanCum$Total)
-  colnames(output) <- c("t", "lowerCI", "upperCI", "meanTotal")
+
+  output <- cbind(meanCum$t, SIs, meanCum$IncPerc)
+  colnames(output) <- c("t", "lowerCI", "upperCI", "CumulativeIncidencePercent")
   assign("output", output, envir = .GlobalEnv)
   #create line plot with ribbon
-  outputplot <- ggplot(output) + geom_line(aes(x = t, y = meanTotal)) +
+  outputplot <- ggplot(output) + geom_line(aes(x = t, y = CumulativeIncidencePercent)) +
     geom_ribbon(aes(x = t, ymin = lowerCI, ymax = upperCI), alpha = transp) +
     theme_classic()
   # save plot
   ggsave(paste(dataOut, "plot", filetype, sep = ""), outputplot)
 }
 
-accumulate(basicReport_BLACK, plotType)
+accumulate(basicReport_BLACK, plotType,plotColor, transparency)
 # have to see where the confidences land in this
 # this should also go in the function?
 blackPlot <- ggplot(basicReport_BLACK) + geom_line(aes(t, total)) + 
