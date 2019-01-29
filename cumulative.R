@@ -24,10 +24,10 @@ accumulate <-function(rawData, filetype, col, transp) {
   forCum <- rawData
   x <-forCum %>% group_by(nseed) %>% mutate(cumInc = cumsum(Incid))
   forCum <- data.frame(x)
-  forCum$IncPerc <- forCum$cumInc/forCum$Total
+  forCum$IncPerc <- (forCum$cumInc/forCum$Total)*100
   #cbind(forCum, cum_Inc)
   # take the mean of each timestep
-  meanCum <- aggregate(.~t, forCum, function(x) mean = mean(x))
+  meanCum <<- aggregate(.~t, forCum, function(x) mean = mean(x))
 
 
   # gives the cumulative sum BEFORE taking the mean, allowing further
@@ -40,20 +40,29 @@ accumulate <-function(rawData, filetype, col, transp) {
   # because of the way the quantile funciton works, we can't use it over 
   # the entire df. Because of that, we can use tapply, but need to coerce it
   # back to a dataframe with rbind and as.data.frame
-  SIs <- tapply(forCum$IncPerc, forCum$t, quantile, probs = c(.025, .975)) %>%
+  SIs <<- tapply(forCum$IncPerc, forCum$t, quantile, probs = c(.025, .975)) %>%
+    do.call("rbind",.) %>% as.data.frame()
+  SIprev <- SIs <- tapply(forCum$HIV, forCum$t, quantile, probs = c(.025, .975)) %>%
     do.call("rbind",.) %>% as.data.frame()
   # put the SIs and mean of the total cumulative incidence into a df, name
   # columns, and assign it to an output variable for analysis
 
   output <- cbind(meanCum$t, SIs, meanCum$IncPerc)
+  outputPrev <- cbind(meanCum$t, SIprev, meanCum$HIV)
   colnames(output) <- c("t", "lowerCI", "upperCI", "CumulativeIncidencePercent")
+  colnames(outputPrev) <- c("t", "lowerCI", "upperCI", "CumulativeIncidencePrev")
   assign("output", output, envir = .GlobalEnv)
   #create line plot with ribbon
   outputplot <- ggplot(output) + geom_line(aes(x = t, y = CumulativeIncidencePercent)) +
     geom_ribbon(aes(x = t, ymin = lowerCI, ymax = upperCI), alpha = transp) +
+    #scale_y_continuous(labels = function(x) paste0(x*100, "%"))+
     theme_classic()
-  # save plot
+  prevPlot <- ggplot(outputPrev) + geom_line(aes(x = t, y = CumulativeIncidencePrev)) +
+    geom_ribbon(aes(x = t, ymin = lowerCI, ymax = upperCI), alpha = transp) +
+    theme_classic()
+  # save plots
   ggsave(paste(dataOut, "plot", filetype, sep = ""), outputplot)
+  ggsave(paste(dataOut, "Prevplot", filetype, sep = ""), prevPlot)
 }
 
 accumulate(basicReport_BLACK, plotType,plotColor, transparency)
@@ -62,6 +71,54 @@ accumulate(basicReport_BLACK, plotType,plotColor, transparency)
 blackPlot <- ggplot(basicReport_BLACK) + geom_line(aes(t, total)) + 
   geom_ribbon(aes(x = t, ymin = Confidence[1], ymax = Confidence[2]), alpha = transp,
               fill = ribbonColor)
+
+if (black == T){
+  if (exists("basicReport_BLACK")){
+    accumulate(basicReport_BLACK, plotType, plotColor, transparency)
+  } else{
+    print("Error: basicReport_BLACK does not exist")
+  }
+}
+  
+if (white == T){
+  if (exists("basicReport_WHITE")){
+    accumulate(basicReport_WHITE,plotType, plotColor, transparency)
+  } else{
+    print("Error: basicReport_WHITE does not exist")
+  }
+}
+
+if (HF == T){
+  if (exists("basicReport_HF")){
+    accumulate(basicReport_HF, plotType, plotColor, transparency)
+  } else{
+    print("Error: basicReport_HF does not exist")
+  }
+}
+if (HM == T){
+  if (exists("basicReport_HM")){
+    accumulate(basicReport_HM, plotType, plotColor, transparency)
+  } else{
+    print("Error: basicReport_HM does not exist")
+  }
+}
+if (MSM == T){
+  if (exists("basicReport_MSM")){
+    accumulate(basicReport_MSM, plotType, plotColor, transparency)
+  } else{
+    print("Error: basicReport_MSM does not exist")
+  }
+}
+if (Incar == T){
+  if (exists("basicReport_INCAR")){
+    accumulate(basicReport_INCAR, plotType, plotColor, transparency)
+  } else{
+    print("Error: basicReport_INCAR does not exist")
+  }
+}
+
+
+
 
 #completely untested
 # check if the parse works

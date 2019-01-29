@@ -6,6 +6,13 @@
 # choose directory starting from your home directory
 setwd("~/Documents/outPutAnalysis/TITAN")
 
+# choose files to run
+black = T
+white = T
+HF = T
+HM = T
+MSM = T
+Incar = F
 # Load necessary packages
 
 library('plyr')
