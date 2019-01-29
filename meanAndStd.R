@@ -1,3 +1,5 @@
+#no longer need this -- now take mean within cumulative function
+
 meanAndStd <-function(rawData) {
   #set up empty data frame for the mean output
   forMean <- as.data.frame(seq(0,max(rawData$t),1))
@@ -9,9 +11,7 @@ meanAndStd <-function(rawData) {
   #create a dataframe of means at each timestep
   forMean <- aggregate(.~t, rawData,function(x) mean = mean(x))
   forMean$seed <- NULL #this is mean across seeds; don't need seed
-  colnames(forMean) <- paste(colnames(forMean),"_Mean",sep="")
-  colnames(forMean)[1] <- "t"   #above line adds mean to end of column. This
-                                #corrects time back to t
+
   
   #create a dataframe of standard deviations at each timestep
   forSd <- aggregate(.~t, rawData,function(x) sd = sd(x))
