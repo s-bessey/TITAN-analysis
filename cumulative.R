@@ -29,7 +29,7 @@ accumulate <-function(rawData, filetype, col, transp, writefiles) {
   # processing of that raw data (if you want to plot all runs separately)
   assign(x=dataOutCum, value = forCum, env = parent.frame()) #create variable
   # file name for output txt file
-  fileName <- paste(dataOut,".txt",sep="")
+  fileName <- paste(dataOutCum,".txt",sep="")
   
 
   # because of the way the quantile funciton works, we can't use it over 
@@ -65,7 +65,7 @@ accumulate <-function(rawData, filetype, col, transp, writefiles) {
     scale_y_continuous(labels = function(x) paste0(x*100, "%"))+
     theme_classic()
   # save plots
-  ggsave(paste(dataOut, "Plot", filetype, sep = ""), outputplot)
+  ggsave(paste(dataOutCum, "Plot", filetype, sep = ""), outputplot)
   ggsave(paste(dataOutPrev, "Plot", filetype, sep = ""), prevPlot)
 }
 
