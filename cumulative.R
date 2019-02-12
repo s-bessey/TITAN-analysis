@@ -17,9 +17,11 @@ accumulate <-function(rawData, filetype, col, transp, writefiles) {
   # create a dataframe of cumulative sum of incidence at each timestep for each seed
 
   forCum <- rawData
-  x <-forCum %>% group_by(nseed) %>% mutate(cumInc = cumsum(Incid))
+  forCum$Susceptible <- forCum$Total - forCum$HIV
+  x <-forCum %>% group_by(nseed) %>% mutate(cumInf = cumsum(Incid))
   forCum <- data.frame(x)
-  forCum$IncPerc <- (forCum$cumInc/forCum$Total)
+  forCum$cumInc <- (forCum$cumInc/forCum$Susceptible[1])
+  forCum$inc <- forCum$Incid/forCum$Susceptible
   forCum$PrevPerc <- forCum$HIV/forCum$Total
   # take the mean of each timestep
   meanCum <<- aggregate(.~t, forCum, function(x) mean = mean(x))
