@@ -17,12 +17,21 @@ accumulate <-function(rawData, filetype, col, transp, writefiles) {
   # create a dataframe of cumulative sum of incidence at each timestep for each seed
 
   forCum <- rawData
+  # susceptible includes everyone who is not infected. At-risk is everyone
+  # not infected and not on PrEP
   forCum$Susceptible <- forCum$Total - forCum$HIV
+  forCum$atRisk <- forCum$Susceptible - forCum$PrEP
+  # this takes the cumsum of incidence by nseed -- basically, each run separately
   x <-forCum %>% group_by(nseed) %>% mutate(cumInf = cumsum(Incid))
   forCum <- data.frame(x)
-  forCum$cumInc <- (forCum$cumInc/forCum$Susceptible[1])
-  forCum$inc <- forCum$Incid/forCum$Susceptible
-  forCum$PrevPerc <- forCum$HIV/forCum$Total
+  
+  # this is a really messy way to divide cum incidence by susceptible agents at
+  # t = 0, but mutate was being weird here
+  tempfactor <- rep_len(forCum$Susceptible[1], length(forCum$Susceptible))
+  forCum$incCum <- forCum$cumInf/tempfactor # cumulative incidence = cumulative infections / susceptible @ t = 0
+  forCum$inc <- forCum$Incid/forCum$Susceptible # incidence is over susceptible at that timestep
+  forCum$PrevPerc <- forCum$HIV/forCum$Total # prevalence in the total population (of that demographic)
+  
   # take the mean of each timestep
   meanCum <<- aggregate(.~t, forCum, function(x) mean = mean(x))
 
@@ -37,7 +46,7 @@ accumulate <-function(rawData, filetype, col, transp, writefiles) {
   # because of the way the quantile funciton works, we can't use it over 
   # the entire df. Because of that, we can use tapply, but need to coerce it
   # back to a dataframe with rbind and as.data.frame
-  SIs <<- tapply(forCum$IncPerc, forCum$t, quantile, probs = c(.025, .975)) %>%
+  SIs <<- tapply(forCum$incCum, forCum$t, quantile, probs = c(.025, .975)) %>%
     do.call("rbind",.) %>% as.data.frame()
   SIprev <- tapply(forCum$HIV, forCum$t, quantile, probs = c(.025, .975)) %>%
     do.call("rbind",.) %>% as.data.frame()
@@ -46,7 +55,7 @@ accumulate <-function(rawData, filetype, col, transp, writefiles) {
   
 
   
-  output <- cbind(meanCum$t, SIs, meanCum$IncPerc)
+  output <- cbind(meanCum$t, SIs, meanCum$incCum)
   outputPrev <- cbind(meanCum$t, SIprev, meanCum$HIV)
   colnames(output) <- c("t", "lowerCI", "upperCI", "CumulativeIncidencePercent")
   colnames(outputPrev) <- c("t", "lowerCI", "upperCI", "PrevPercent")
