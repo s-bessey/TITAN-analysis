@@ -6,6 +6,7 @@ library('plyr')
 library('dplyr')
 library('tidyr')
 library('ggplot2')
+library('gridExtra')
 
 # function
 accumulate <-function(rawData, filetype, col, transp, writefiles) {
@@ -75,8 +76,18 @@ accumulate <-function(rawData, filetype, col, transp, writefiles) {
     geom_ribbon(aes(x = t, ymin = lowerCI, ymax = upperCI), alpha = transp, fill = col) +
     scale_y_continuous(labels = function(x) paste0(x*100, "%"))+
     theme_classic()
+  popPlot <- ggplot(forCum) + geom_line(aes(x = t, y = totalN)) + ggtitle("Population") +
+    theme_classic()
+  PrEPplot <- ggplot(forCum) + geom_line(aes(x = t, y = PrEP/totalN))  + ggtitle("PrEP") +
+    theme_classic()
+  HighRisk <- ggplot(forCum) + geom_line(aes(x = t, y = nHR/totalN))  + ggtitle("High Risk") +
+    theme_classic()
+  deaths <- ggplot(forCum) + geom_line(aes(x = t, y = Deaths))  + ggtitle("Deaths") +
+    theme_classic()
+  
+  grid.arrange(popPlot, outputplot, prevPlot)
   # save plots
-  ggsave(paste(dataOutCum, "Plot", filetype, sep = ""), outputplot)
-  ggsave(paste(dataOutPrev, "Plot", filetype, sep = ""), prevPlot)
+  # ggsave(paste(dataOutCum, "Plot", filetype, sep = ""), outputplot)
+  # ggsave(paste(dataOutPrev, "Plot", filetype, sep = ""), prevPlot)
 }
 
